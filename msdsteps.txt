@@ -28,7 +28,7 @@ with_year = FOREACH filtered
 
 --yearcnt = foreach grouped generate group,COUNT(with_year.artist_name);
 
---store yearcnt into 's3://aws-test-ash/data/msdtestout' using PigStorage(',','-schema');
+--store yearcnt into 's3://aws-t***-a**/data/msdtestout' using PigStorage(',','-schema');
 
 
 
@@ -43,4 +43,4 @@ hsyear = FOREACH grouped {
 
 
 
-store hsyear into 's3://aws-test-ash/data/fullhotsong' using PigStorage(',','-schema');
+store hsyear into 's3://aws-t***-a**/data/fullhotsong' using PigStorage(',','-schema');
