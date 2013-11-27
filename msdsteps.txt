@@ -1,3 +1,5 @@
+--Example to get MSD data and some sample pig scripts - used 10 smll instances on EMR
+
 songs = LOAD 's3n://tbmmsd/*.tsv.*' USING PigStorage('\t') AS (
          track_id:chararray, analysis_sample_rate:chararray, artist_7digitalid:chararray,
          artist_familiarity:chararray, artist_hotness:double, artist_id:chararray, artist_latitude:chararray, 
@@ -44,3 +46,4 @@ hsyear = FOREACH grouped {
 
 
 store hsyear into 's3://aws-t***-a**/data/fullhotsong' using PigStorage(',','-schema');
+
