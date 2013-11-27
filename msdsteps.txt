@@ -1,0 +1,46 @@
+songs = LOAD 's3n://tbmmsd/*.tsv.*' USING PigStorage('\t') AS (
+         track_id:chararray, analysis_sample_rate:chararray, artist_7digitalid:chararray,
+         artist_familiarity:chararray, artist_hotness:double, artist_id:chararray, artist_latitude:chararray, 
+         artist_location:chararray, artist_longitude:chararray, artist_mbid:chararray, artist_mbtags:chararray, 
+         artist_mbtags_count:chararray, artist_name:chararray, artist_playmeid:chararray, artist_terms:chararray, 
+         artist_terms_freq:chararray, artist_terms_weight:chararray, audio_md5:chararray, bars_confidence:chararray, 
+         bars_start:chararray, beats_confidence:chararray, beats_start:chararray, danceability:double, 
+         duration:float, end_of_fade_in:chararray, energy:chararray, key:chararray, key_confidence:chararray, 
+         loudness:chararray, mode:chararray, mode_confidence:chararray, release:chararray, 
+         release_7digitalid:chararray, sections_confidence:chararray, sections_start:chararray, 
+         segments_confidence:chararray, segments_loudness_max:chararray, segments_loudness_max_time:chararray, 
+         segments_loudness_max_start:chararray, segments_pitches:chararray, segments_start:chararray, 
+         segments_timbre:chararray, similar_artists:chararray, song_hotness:double, song_id:chararray, 
+         start_of_fade_out:chararray, tatums_confidence:chararray, tatums_start:chararray, tempo:double, 
+         time_signature:chararray, time_signature_confidence:chararray, title:chararray, track_7digitalid:chararray, 
+         year:int );
+
+filtered = FILTER songs 
+               BY year IS NOT NULL 
+              AND year > 0
+              AND song_hotness IS NOT NULL
+              AND song_hotness > 0.0;
+
+with_year = FOREACH filtered
+             GENERATE artist_name, title, year, song_hotness;
+
+ grouped = GROUP with_year BY year;
+
+--yearcnt = foreach grouped generate group,COUNT(with_year.artist_name);
+
+--store yearcnt into 's3://aws-test-ash/data/msdtestout' using PigStorage(',','-schema');
+
+
+
+hsyear = FOREACH grouped {
+    -- order to put the hottest song in this group on top
+    ordered = ORDER with_year BY song_hotness DESC;
+    
+    -- grab only the hottest song
+    top_song = LIMIT ordered 1;
+    GENERATE group as year, flatten(top_song);
+};
+
+
+
+store hsyear into 's3://aws-test-ash/data/fullhotsong' using PigStorage(',','-schema');
